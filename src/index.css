@@ -1,0 +1,236 @@
+/* =============================================================
+   FILE: index.css
+   PURPOSE: Stylesheet for the eDoc Hospital frontend.
+   ============================================================= */
+:root {
+  /* Classic Edoc Clinical Palette */
+  --primary: #007bff;
+  --primary-dark: #0056b3;
+  --primary-light: #e7f2ff;
+  --primary-glow: rgba(0, 123, 255, 0.2);
+  
+  --secondary: #6c757d;
+  --accent: #28a745;
+  
+  --success: #28a745;
+  --warning: #ffc107;
+  --error: #dc3545;
+  
+  --bg-main: #f0f2f5;
+  --bg-surface: #ffffff;
+  --border: #dee2e6;
+  
+  --text-main: #212529;
+  --text-muted: #6c757d;
+  
+  /* Edoc Classic Depth */
+  --shadow-sm: 0 .125rem .25rem rgba(0,0,0,.075);
+  --shadow-md: 0 .5rem 1rem rgba(0,0,0,.15);
+  --shadow-lg: 0 1rem 3rem rgba(0,0,0,.175);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', -apple-system, sans-serif;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  min-height: 100vh;
+}
+
+/* --- Classic Edoc Cards --- */
+.glass-card {
+  background: white;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  border-radius: 4px;
+}
+
+/* --- Edoc Buttons --- */
+.btn-primary {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+}
+
+/* --- Input --- */
+.input-field {
+  width: 100%;
+  padding: 10px 15px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: white;
+  font-size: 0.9rem;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 0.2rem var(--primary-glow);
+}
+
+/* --- Layout --- */
+.main-content {
+  flex: 1;
+  padding: 30px;
+  width: 100%;
+  min-width: 0; /* Prevents flex items from overflowing */
+}
+
+/* --- Responsive Grids --- */
+.responsive-grid {
+  display: grid;
+  gap: 20px;
+  width: 100%;
+}
+
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+.grid-5 { grid-template-columns: repeat(5, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+
+@media (max-width: 1400px) {
+  .grid-5 { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 1200px) {
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 15px;
+  }
+  .grid-5, .grid-4, .grid-3, .grid-2 {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Hide sidebar by default on mobile if we implement a toggle */
+  .sidebar-hidden {
+    display: none !important;
+  }
+}
+
+.pharma-workbench-main {
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 18px;
+}
+
+.pharma-workbench-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 340px);
+  gap: 24px;
+  padding: 24px 0 30px;
+}
+
+.pharma-workbench-queue-card {
+  min-width: 180px;
+}
+
+.pharma-workbench-inventory {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 15px;
+}
+
+@media (max-width: 1180px) {
+  .pharma-workbench-grid {
+    grid-template-columns: 1fr;
+  }
+  .pharma-workbench-main {
+    padding: 0 12px;
+  }
+  .pharma-workbench-queue-card {
+    min-width: 160px;
+  }
+}
+
+@media (max-width: 760px) {
+  .pharma-workbench-grid {
+    gap: 16px;
+  }
+  .pharma-workbench-main {
+    padding: 0 10px;
+  }
+}
+
+/* --- Gradient Text Reversion --- */
+.gradient-text {
+  background: none;
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: initial;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+/* --- Invisible Scrollbars --- */
+::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* =============================================================
+   Global Mobile Overrides (Size & Layout Fixes)
+   ============================================================= */
+@media (max-width: 992px) {
+  /* Override massive inline paddings usually found on page roots */
+  main > div {
+    padding: 16px !important;
+  }
+  
+  /* Target nested hero cards or large banners that have hardcoded 40px paddings */
+  main > div > div[style*="padding: 40px"] {
+    padding: 20px !important;
+    border-radius: 12px !important; /* Scale down radii too */
+  }
+
+  /* Make sure any real tables handle overflow nicely instead of squishing */
+  table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* =============================================================
+   Page Transition Animations
+   ============================================================= */
+.page-transition {
+  animation: comeTogether 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+@keyframes comeTogether {
+  0% {
+    opacity: 0;
+    transform: scale(0.97) translateY(15px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

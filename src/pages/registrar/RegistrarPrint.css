@@ -1,0 +1,84 @@
+/* =============================================================
+   FILE: RegistrarPrint.css
+   PURPOSE: Stylesheet for the eDoc Hospital frontend.
+   ============================================================= */
+/* ============================================
+   Clinical Archive Terminal — RegistrarPrint.css
+   Teal-Cyan Identity Design System v2.2
+   ============================================ */
+
+@keyframes pulse {
+    0%   { opacity: 1; transform: scale(1); }
+    50%  { opacity: 0.6; transform: scale(1.1); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.dossier-card {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.dossier-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.15) !important;
+    border-color: #0891b2 !important;
+}
+
+.vibrant-search {
+    transition: all 0.3s;
+}
+
+.vibrant-search:focus {
+    border-color: #0891b2 !important;
+    box-shadow: 0 0 0 5px rgba(8, 145, 178, 0.15) !important;
+    transform: scale(1.01);
+    outline: none;
+}
+
+.btn-primary {
+    transition: all 0.3s;
+}
+
+.btn-primary:hover {
+    background: #1e293b !important;
+    transform: translateY(-2px);
+    box-shadow: 0 15px 25px -5px rgba(15, 23, 42, 0.4) !important;
+}
+
+.btn-secondary {
+    transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+    background: #0891b2 !important;
+    color: white !important;
+    border-color: #0891b2 !important;
+    transform: translateY(-2px);
+}
+
+/* ============================================
+   Print Media Queries — Archival Compliance
+   ============================================ */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    .main-content {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+    }
+
+    .print-only {
+        display: block !important;
+    }
+
+    body {
+        background: white !important;
+    }
+
+    @page {
+        margin: 10mm;
+        size: A4;
+    }
+}

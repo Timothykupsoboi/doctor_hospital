@@ -1,0 +1,22 @@
+{
+  "short_name": "Moonview",
+  "name": "Moonview Medical Centre",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/logo.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#007bff",
+  "description": "Moonview Medical Centre App"
+}
