@@ -77,7 +77,7 @@ export const getPatientHistory = async (pid) => {
     patient,
     events: [
       ...(appointments || []).map(a => ({ type: 'appointment', id: a.apponum, event_date: a.appodate, provider: a.doctor?.docname || 'Doctor', detail: a.status })),
-      ...(prescriptions || []).map(p => ({ type: 'prescription', id: p.prescid, event_date: p.date, provider: p.doctor?.docname || 'Doctor', detail: p.medicine_name })),
+      ...(prescriptions || []).map(p => ({ type: 'prescription', id: p.prescid, event_date: p.date, provider: p.doctor?.docname || 'Doctor', detail: p.drug_name || p.medicine_name || 'Prescription' })),
       ...(labResults || []).map(l => ({ type: 'lab', id: l.lab_res_id, event_date: l.test_date, provider: 'Lab Technician', detail: l.test_name })),
     ].sort((a, b) => new Date(b.event_date) - new Date(a.event_date)),
     patientError,
@@ -264,8 +264,9 @@ export const getScheduleForDoctor = (docid, date) =>
 
 export const getDoctorQueue = async (docEmail) => {
   const today = new Date().toISOString().split('T')[0];
-  const { data: doc } = await getDoctorByEmail(docEmail);
-  if (!doc) return { data: null, error: new Error('Doctor not found') };
+  const { data: docList } = await getDoctorByEmail(docEmail);
+  const doc = Array.isArray(docList) ? docList[0] : docList;
+  if (!doc || !doc.docid) return { data: null, error: new Error('Doctor not found') };
   return supabase
     .from('appointment')
     .select(`appoid, apponum, status, created_at, patient:pid(pid, pname, ptel, patient_display_id, pgender), schedule:scheduleid(scheduletime, scheduledate)`)

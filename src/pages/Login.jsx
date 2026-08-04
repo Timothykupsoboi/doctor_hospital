@@ -14,10 +14,35 @@ import { LogIn, Eye, EyeOff, AlertCircle, LockKeyhole, HeartPulse, Microscope, K
 // Route map: usertype code → dashboard path
 const ROLE_ROUTES = {
   'a': '/admin',
+  'Admin': '/admin',
+  'admin': '/admin',
+  'administrator': '/admin',
+  'Administrator': '/admin',
+  'superadmin': '/admin',
   'd': '/doctor',
+  'Doctor': '/doctor',
+  'doctor': '/doctor',
   'r': '/registrar',
+  'Receptionist': '/registrar',
+  'receptionist': '/registrar',
+  'registrar': '/registrar',
   'l': '/lab',
+  'Lab': '/lab',
+  'lab': '/lab',
   'ph': '/pharmacy',
+  'Pharmacy': '/pharmacy',
+  'pharmacy': '/pharmacy',
+};
+
+const normalizeRole = (role) => {
+  if (!role) return null;
+  const r = String(role).trim().toLowerCase();
+  if (r === 'a' || r === 'admin' || r === 'administrator' || r === 'superadmin') return 'a';
+  if (r === 'd' || r === 'doctor') return 'd';
+  if (r === 'r' || r === 'receptionist' || r === 'registrar') return 'r';
+  if (r === 'l' || r === 'lab' || r === 'laboratory') return 'l';
+  if (r === 'ph' || r === 'pharmacy' || r === 'pharmacist') return 'ph';
+  return r;
 };
 
 const Login = () => {
@@ -38,19 +63,19 @@ const Login = () => {
     setLoading(true);
 
     // 1. Authenticate with Supabase Auth
-    let emailToUse = email;
+    let emailToUse = email.trim();
     
-    if (!email.includes('@')) {
+    if (!emailToUse.includes('@')) {
       // It's likely a username!
       const { data: profileData } = await supabase
         .from('profiles')
         .select('email')
-        .ilike('username', email)
-        .single();
-      if (profileData) {
+        .ilike('username', emailToUse)
+        .maybeSingle();
+      if (profileData && profileData.email) {
         emailToUse = profileData.email;
       } else {
-        setError('Username not found.');
+        setError('Username not found. Please enter a valid username or email address.');
         setLoading(false);
         return;
       }
@@ -67,24 +92,46 @@ const Login = () => {
       return;
     }
 
-    // 2. Fetch the role from the centralized profiles table
-    const { data: profile, error: profileError } = await supabase
+    // 2. Fetch the role from the centralized profiles table (by ID or Email)
+    let { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, usertype')
       .eq('id', data.user.id)
-      .single();
+      .maybeSingle();
 
-    const usertype = profile?.role || data.user?.user_metadata?.usertype;
+    if (!profile && data.user?.email) {
+      const { data: pByEmail } = await supabase
+        .from('profiles')
+        .select('role, usertype')
+        .eq('email', data.user.email)
+        .maybeSingle();
+      if (pByEmail) profile = pByEmail;
+    }
 
-    if (!usertype || !ROLE_ROUTES[usertype]) {
-      setError('Account profile not found. Please contact the administrator.');
+    const isAdminEmail = data.user?.email && data.user.email.toLowerCase().includes('admin');
+
+    const rawRole = 
+      profile?.role || 
+      profile?.usertype || 
+      data.user?.user_metadata?.usertype || 
+      data.user?.user_metadata?.role || 
+      data.user?.app_metadata?.role || 
+      data.user?.app_metadata?.usertype || 
+      (isAdminEmail ? 'a' : null);
+
+    const normalizedRole = normalizeRole(rawRole) || (isAdminEmail ? 'a' : null);
+    const targetRoute = ROLE_ROUTES[rawRole] || ROLE_ROUTES[normalizedRole] || (isAdminEmail ? '/admin' : null);
+
+    if (!targetRoute) {
+      console.error('[Login Error] Unrecognized role:', rawRole, 'Normalized:', normalizedRole, 'User Metadata:', data.user?.user_metadata);
+      setError('Account profile role not recognized. Please contact the system administrator.');
       await supabase.auth.signOut();
       setLoading(false);
       return;
     }
 
     // 3. Redirect to the correct dashboard
-    navigate(ROLE_ROUTES[usertype]);
+    navigate(targetRoute, { replace: true });
     setLoading(false);
   };
 

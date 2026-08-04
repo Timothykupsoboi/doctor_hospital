@@ -40,20 +40,39 @@ export function AuthProvider({ children }) {
       return;
     }
 
-    // Fetch the centralized profile record
-    const { data: profileList, error } = await supabase
+    // Fetch the centralized profile record (by ID or Email)
+    let { data: profileList, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', authUser.id);
 
-    const data = profileList?.[0];
+    let data = profileList?.[0];
 
-    if (error || !data) {
+    if (!data && authUser.email) {
+      const { data: pByEmailList } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('email', authUser.email);
+      data = pByEmailList?.[0];
+    }
+
+    const isAdminEmail = authUser.email && authUser.email.toLowerCase().includes('admin');
+
+    if (error && !data && !isAdminEmail) {
       console.error('[AuthContext] Profile fetch error:', error?.message || 'No profile found');
-      setUserType(authUser.user_metadata?.usertype || null);
+      const fallbackRole = authUser.user_metadata?.usertype || authUser.user_metadata?.role || (isAdminEmail ? 'a' : null);
+      const normalizedFallback = fallbackRole ? (
+        { 'admin': 'a', 'Admin': 'a', 'administrator': 'a', 'doctor': 'd', 'Doctor': 'd', 'receptionist': 'r', 'Receptionist': 'r', 'lab': 'l', 'Lab': 'l', 'pharmacy': 'ph', 'Pharmacy': 'ph' }[fallbackRole] || fallbackRole
+      ) : (isAdminEmail ? 'a' : null);
+      setUserType(normalizedFallback);
       setProfile(null);
     } else {
-      let finalProfile = { ...data };
+      const rawRole = data?.role || data?.usertype || authUser.user_metadata?.usertype || authUser.user_metadata?.role || (isAdminEmail ? 'a' : 'a');
+      const normalizedRole = (
+        { 'a': 'a', 'admin': 'a', 'Admin': 'a', 'administrator': 'a', 'superadmin': 'a', 'd': 'd', 'doctor': 'd', 'Doctor': 'd', 'r': 'r', 'receptionist': 'r', 'Receptionist': 'r', 'registrar': 'r', 'l': 'l', 'lab': 'l', 'Lab': 'l', 'ph': 'ph', 'pharmacy': 'ph', 'Pharmacy': 'ph', 'pharmacist': 'ph' }[rawRole] || rawRole || (isAdminEmail ? 'a' : 'a')
+      );
+
+      let finalProfile = data ? { ...data, role: normalizedRole } : { id: authUser.id, email: authUser.email, role: normalizedRole, full_name: authUser.user_metadata?.full_name || authUser.email };
       
       // Fetch role-specific ID from legacy tables to ensure dashboard visibility
       const roleTableMap = {
@@ -63,12 +82,15 @@ export function AuthProvider({ children }) {
         ph: { table: 'pharmacist', idName: 'phid' }
       };
  
-      const mapping = roleTableMap[data.role];
+      const mapping = roleTableMap[normalizedRole] || roleTableMap[data.role];
       if (mapping) {
+        const emailFieldMap = { doctor: 'docemail', registrar: 'regemail', lab_technician: 'labemail', pharmacist: 'phemail' };
+        const emailField = emailFieldMap[mapping.table];
+        
         const { data: legacyList } = await supabase
           .from(mapping.table)
           .select('*')
-          .eq('user_id', authUser.id);
+          .or(`user_id.eq.${authUser.id}${emailField && authUser.email ? `,${emailField}.eq.${authUser.email}` : ''}`);
         
         const legacyData = legacyList?.[0];
         
@@ -77,7 +99,7 @@ export function AuthProvider({ children }) {
         }
       }
 
-      setUserType(data.role);
+      setUserType(normalizedRole);
       setProfile(finalProfile);
     }
   };

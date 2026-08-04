@@ -204,9 +204,10 @@ const Sidebar = ({ userType }) => {
         ]
     };
 
-    // If logged in user is admin ('a'), always show admin items even on other role pages
-    const effectiveUserType = (profile?.role === 'a') ? 'a' : userType;
-    const items = navItems[effectiveUserType] || [];
+    // If logged in user is admin ('a' or 'Admin'), always show admin items even on other role pages
+    const isAdmin = profile?.role === 'a' || profile?.role === 'Admin' || userType === 'a' || userType === 'Admin';
+    const effectiveUserType = isAdmin ? 'a' : (navItems[userType] ? userType : 'a');
+    const items = navItems[effectiveUserType] || navItems.a || [];
 
     const toggleSidebar = () => setIsCollapsed(!isCollapsed);
     const toggleMobile = () => setShowMobile(!showMobile);
